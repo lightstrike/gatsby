@@ -269,31 +269,54 @@ async function getPages(
   try {
     let result = []
 
-    const getOptions = page => {
-      let o = {
-        method: `get`,
-        url: `${url}?${querystring.stringify({
+    const getPageUrl = page => {
+        return `${url}?${querystring.stringify({
           per_page: _perPage,
           page: page,
-        })}`,
-      }
-      if (_hostingWPCOM) {
-        o.headers = {
-          Authorization: `Bearer ${_accessToken}`,
-        }
-      } else {
-        o.auth = _auth
-          ? { username: _auth.htaccess_user, password: _auth.htaccess_pass }
-          : null
-      }
-      return o
-    }
+        })}`
+		}
+
+		let o = {
+			method: `get`,
+		}
+		if (_hostingWPCOM) {
+			o.headers = {
+				Authorization: `Bearer ${_accessToken}`,
+			}
+		} else {
+			o.auth = _auth
+				? { username: _auth.htaccess_user, password: _auth.htaccess_pass }
+				: null
+		}
+
+		const axiosClient = axios.create(o)
+		
+		// Thanks to https://github.com/Jedidiah/gatsby-source-twitch/blob/master/src/gatsby-node.js
+		// and https://stackoverflow.com/questions/43482639/throttling-axios-requests
+		const rateLimit = 1000;
+		let lastCalled;
+
+		const rateLimiter = call => {
+			console.info(lastCalled)
+			const now = Date.now();
+			if (lastCalled) {
+				lastCalled += rateLimit;
+				const wait = lastCalled - now;
+				if (wait > 0) {
+					return new Promise(resolve => setTimeout(() => resolve(call), wait));
+				}
+			}
+			lastCalled = now;
+			return call;
+		}
+
+		axiosClient.interceptors.request.use(rateLimiter)
 
     // Initial request gets the first page of data
     // but also the total count of objects, used for
     // multiple concurrent requests (rather than waterfall)
-    const options = getOptions(page)
-    const { headers, data } = await axios(options)
+		const firstPage = getPageUrl(page)
+    const { headers, data } = await axiosClient.get(firstPage)
 
     result = result.concat(data)
 
@@ -314,11 +337,13 @@ async function getPages(
 
     // We got page 1, now we want pages 2 through totalPages
     const requests = _.range(2, totalPages + 1).map(getPage => {
-      const options = getOptions(getPage)
-      return axios(options)
+			const pageUrl = getPageUrl(getPage)
+      return axiosClient.get(pageUrl)
     })
 
     return Promise.all(requests).then(pages => {
+			console.info("Request at: " + lastCalled)
+			console.info(pages)
       const data = pages.map(page => page.data)
       data.forEach(list => {
         result = result.concat(list)
