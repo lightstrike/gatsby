@@ -342,8 +342,6 @@ async function getPages(
     })
 
     return Promise.all(requests).then(pages => {
-			console.info("Request at: " + lastCalled)
-			console.info(pages)
       const data = pages.map(page => page.data)
       data.forEach(list => {
         result = result.concat(list)
@@ -392,6 +390,7 @@ function getValidRoutes({
         `2.0`,
         `embed`,
         `proxy`,
+        `comments`,
         ``,
         baseUrl,
       ]
