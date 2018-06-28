@@ -5,6 +5,7 @@
   "version": "1.0.0-beta.6",
   "author": "Sebastien Fichot <fichot.sebastien@gmail.com>",
   "dependencies": {
+    "eslint-config-react-app": "2.1.0",
     "gatsby": "next",
     "gatsby-image": "next",
     "gatsby-plugin-glamor": "next",

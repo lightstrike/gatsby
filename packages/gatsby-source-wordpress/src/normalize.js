@@ -500,9 +500,9 @@ const prepareACFChildNodes = (
   // We recursively handle children nodes first, so we need
   // to make sure parent nodes will be before their children.
   // So let's use unshift to put nodes in the beginning.
-  childrenNodes.unshift(acfChildNode)
+  childrenNodes.unshift(acfChildNode);
 
-  return acfChildNode
+  return acfChildNode;
 }
 
 exports.createNodesFromEntities = ({ entities, createNode }) => {

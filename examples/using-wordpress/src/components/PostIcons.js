@@ -34,9 +34,6 @@ export default ({ node, className = `` }) => (
 export const query = graphql`
   fragment PostIcons on wordpress__POST {
     date(formatString: "MMMM DD, YYYY")
-    tags {
-      name
-    }
     categories {
       name
     }

@@ -1,5 +1,6 @@
 const fetch = require(`./fetch`)
 const normalize = require(`./normalize`)
+const normalizeImages = require('./normalizeImages');
 
 const typePrefix = `wordpress__`
 const refactoredEntityTypes = {
@@ -106,6 +107,9 @@ exports.sourceNodes = async (
     touchNode,
     _auth,
   })
+
+  // Enfancify images using gatsby-plugin-sharp
+  entities = await normalizeImages(entities);
 
   // Creates links between elements and parent element.
   entities = normalize.mapElementsToParent(entities)
