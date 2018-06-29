@@ -2,6 +2,7 @@ const crypto = require(`crypto`)
 const deepMapKeys = require(`deep-map-keys`)
 const _ = require(`lodash`)
 const { createRemoteFileNode } = require(`gatsby-source-filesystem`)
+const {fluid} = require('gatsby-plugin-sharp');
 
 const colorized = require(`./output-color`)
 const conflictFieldPrefix = `wordpress_`
@@ -440,7 +441,15 @@ exports.downloadMediaFiles = async ({
 
             if (fileNode) {
               fileNodeID = fileNode.id
-
+              try {
+              console.info(`Try image time: ${fileNode.absolutePath}`)
+              const fluidImages = await fluid(fileNode.absolutePath);
+              console.info("We have an image")
+              console.info(fluidImages);
+              } catch(e) {
+                // Ignore
+              }
+              console.info("Skipped the image")
               await cache.set(mediaDataCacheKey, {
                 fileNodeID,
                 modified: e.modified,

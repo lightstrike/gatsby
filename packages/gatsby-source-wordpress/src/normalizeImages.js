@@ -13,6 +13,7 @@ function toHast(html) {
 }
 
 
+/*
 // Somewhere (maybe):
 'query {
    allWordpressWpMedia {
@@ -26,17 +27,20 @@ function toHast(html) {
      }
    }
  }'
+ */
 
-async function normalizeEntity(entity) {
+async function normalizeEntity(entity, media) {
   if (entity.__type !== 'wordpress__POST' && entity.__type !== 'wordpress__PAGE') {
     return entity;
   }
 
   const ast = toHast(entity.content);
 
-  selectAll('img', ast)
+  selectAll('img[class*=wp-image]', ast)
     .forEach(element => {
-      console.log('>>>>>> ', element);
+      const localFile = media.find(
+        mObj => element.properties.src === mObj.source_url
+      )
       element.properties.title = 'What An Image!';
       element.properties.alt = 'What An Image!';
     });
@@ -44,15 +48,32 @@ async function normalizeEntity(entity) {
   const html = astToHtml(ast);
   entity.content = html;
 
-  console.log('##########################################\n');
-  console.log(html);
-  console.log('##########################################\n');
-
   return entity;
 }
 
-async function normalizeImages(entities) {
-  return Promise.all(entities.map(normalizeEntity));
+function normalizeImages(entities) {
+  /*
+  graphql(
+    `
+      allWordpressWpMedia {
+        edges {
+          node {
+            source_url
+            localFile {
+              absolutePath
+            }
+          }
+        }
+      }
+    `).then(result => {
+      console.info(result.data)
+    }) */
+  const eTypes = entities.map(e => e.__type)
+  const eSet = new Set(eTypes)
+  console.info(eSet)
+  const media = entities.filter(e => e.__type === `wordpress__wp_media`)
+  console.info(media[0])
+  return Promise.all(entities.map(e => normalizeEntity(e, media)));
 }
 
 module.exports = normalizeImages;

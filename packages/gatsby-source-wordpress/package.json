@@ -14,6 +14,7 @@
     "bluebird": "^3.5.0",
     "deep-map": "^1.5.0",
     "deep-map-keys": "^1.2.0",
+    "extract-text-webpack-plugin": "^3.0.2",
     "gatsby-source-filesystem": "^2.0.1-beta.3",
     "hast-util-select": "1.0.1",
     "hast-util-to-html": "3.1.0",
@@ -23,7 +24,8 @@
     "minimatch": "^3.0.4",
     "parse5": "5.0.0",
     "qs": "^6.4.0",
-    "rehype-react": "3.0.2"
+    "rehype-react": "3.0.2",
+    "static-site-generator-webpack-plugin": "^3.4.1"
   },
   "deprecated": false,
   "devDependencies": {

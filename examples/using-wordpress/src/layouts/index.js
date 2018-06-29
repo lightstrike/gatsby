@@ -46,7 +46,7 @@ class DefaultLayout extends React.Component {
                 }}
                 to="/"
               >
-                Gatsby + Wordpress!!
+                Gatsby + Wordpress v2
               </Link>
             </h1>
           </div>

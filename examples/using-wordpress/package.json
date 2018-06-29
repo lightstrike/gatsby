@@ -5,9 +5,12 @@
   "version": "1.0.0-beta.6",
   "author": "Sebastien Fichot <fichot.sebastien@gmail.com>",
   "dependencies": {
+    "chunk-manifest-webpack-plugin": "^1.1.2",
     "eslint-config-react-app": "2.1.0",
     "gatsby": "next",
+    "gatsby-1-config-css-modules": "^1.0.10-13",
     "gatsby-image": "next",
+    "gatsby-module-loader": "^2.0.0-alpha.3",
     "gatsby-plugin-glamor": "next",
     "gatsby-plugin-react-helmet": "next",
     "gatsby-plugin-sharp": "next",
@@ -22,7 +25,9 @@
     "react-icons": "^2.2.7",
     "react-typography": "^0.16.13",
     "typography": "^0.16.16",
-    "typography-theme-wordpress-2013": "^0.15.10"
+    "typography-theme-wordpress-2013": "^0.15.10",
+    "webpack-configurator": "^0.3.1",
+    "webpack-validator": "^3.0.1"
   },
   "keywords": [
     "gatsby"
