@@ -442,21 +442,18 @@ exports.downloadMediaFiles = async ({
             if (fileNode) {
               fileNodeID = fileNode.id
               try {
-              console.info(`Try image time: ${fileNode.absolutePath}`)
-              const fluidImages = await fluid(fileNode.absolutePath);
-              console.info("We have an image")
-              console.info(fluidImages);
-              } catch(e) {
-                // Ignore
+                const fluidImages = await fluid({file: fileNode});
+                e.fluid = fluidImages;
+              } catch(error) {
+                console.error(error);
               }
-              console.info("Skipped the image")
               await cache.set(mediaDataCacheKey, {
                 fileNodeID,
                 modified: e.modified,
               })
             }
-          } catch (e) {
-            // Ignore
+          } catch (error) {
+            console.error(error);
           }
         }
       }
