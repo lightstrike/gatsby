@@ -1,5 +1,6 @@
 const fetch = require(`./fetch`)
 const normalize = require(`./normalize`)
+const { fluid } = require('gatsby-plugin-sharp')
 
 const typePrefix = `wordpress__`
 const refactoredEntityTypes = {
@@ -154,4 +155,29 @@ exports.sourceNodes = async (
   normalize.createNodesFromEntities({ entities, createNode })
 
   return
+}
+
+/*
+ * Available methods: https://github.com/gatsbyjs/gatsby/issues/4120#issuecomment-366725788
+ */
+exports.onCreateNode = async (
+  { node, actions, getNode },
+  options
+) => {
+  const { createNodeField } = actions
+  if (node.internal.type === 'wordpress__wp_media') {
+    try {
+      const fileNode = getNode(node.localFile___NODE)
+      if (fileNode) {
+        const fluidImages = await fluid({file: fileNode})
+        createNodeField({
+          node,
+          name: 'fluidImages',
+          value: fluidImages
+        })
+      }
+    } catch(error) {
+      console.error(error);
+    }
+  }
 }
