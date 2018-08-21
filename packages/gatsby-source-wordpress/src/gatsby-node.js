@@ -157,27 +157,4 @@ exports.sourceNodes = async (
   return
 }
 
-/*
- * Available methods: https://github.com/gatsbyjs/gatsby/issues/4120#issuecomment-366725788
- */
-exports.onCreateNode = async (
-  { node, actions, getNode },
-  options
-) => {
-  const { createNodeField } = actions
-  if (node.internal.type === 'wordpress__wp_media') {
-    try {
-      const fileNode = getNode(node.localFile___NODE)
-      if (fileNode) {
-        const fluidImages = await fluid({file: fileNode})
-        createNodeField({
-          node,
-          name: 'fluidImages',
-          value: fluidImages
-        })
-      }
-    } catch(error) {
-      console.error(error);
-    }
-  }
-}
+exports.onCreateNode = require(`./on-create-node`)
