@@ -35,7 +35,7 @@ function gatsbyifyImage(element, localFile) {
         >
           <div style="width: 100%; padding-bottom: ${100 / localFile.fluid.aspectRatio}%;"></div>
           <img
-            class="gatsby-resp-image-image ${element.properties.className.join(' ')}"
+            class="gatsby-resp-image-image ${element.properties.className ? element.properties.className.join(' ') : null}"
             style="width: 100%; height: 100%; margin: 0; vertical-align: middle; position: absolute; top: 0; left: 0; box-shadow: inset 0px 0px 0px 400px ${options.backgroundColor};"
             alt="${element.properties.alt ? element.properties.alt : ""}"
             title="${localFile.title ? localFile.title : ``}"
@@ -62,42 +62,51 @@ module.exports = async (
   options
 ) => {
   const { createNode, createNodeField } = actions
-  const mediaNodes = getNodes().filter(n => n.internal.type === 'wordpress__wp_media')
   if (node.internal.type === 'wordpress__POST') {
-    console.info(`\n\nI'm trying: ${node.title}`)
+    const mediaNodes = getNodes().filter(n => n.internal.type === 'wordpress__wp_media')
     const contentAst = toHast(node.content);
-    await selectAll('img', contentAst).forEach(async element => {
+    const targetElements = selectAll('img', contentAst);
+    for (let element of targetElements) {
+    // await Promise.all(targetElements.map(async (element) => {
       console.info(`Starting: ${element.properties.src}`)
-      const mediaNode = mediaNodes.find(m => element.properties.src === m.source_url)
+      const mediaNode = mediaNodes.find(m => m.source_url.includes(element.properties.src))
       let fileNode;
       try {
-        console.info("get the fileNode:\n")
         fileNode = getNode(mediaNode.localFile___NODE)
+        console.info(`Node found: ${fileNode.internal.description}`)
       } catch(e) {
-        console.info(`\n\n\n\n\n\n***Making: ${element.properties.src} \n\n\n\n\n\n\n`)
         try {
+          // For handling relative URLs (ie. `//www.gatsbyjs.org/image.png`)
+          const protocolInUrl = element.properties.src.startsWith('http');
+          const fetchUrl = protocolInUrl ? element.properties.src : `${options.protocol}:${element.properties.src}`
           fileNode = await createRemoteFileNode({
-            url: element.properties.src,
+            url: fetchUrl,
             store,
             cache,
             createNode,
             createNodeId,
           })
-          console.info(`\n%%%%%% WE MADE!!!: ${fileNode.internal.description} %%%%%% \n\n\n\n`)
+          console.info(`Did we make it?`)
+          try {
+            console.info(`WE DID! ${fileNode.internal.description}`)
+          } catch(e) {
+            console.log(`Oh no ${element.properties.src} -- ${e} `)
+            console.dir(fileNode)
+          }
         } catch(e) {
-          console.log(`Strange: ${e}`);
+          console.log(`Strange: ${element.properties.src} -- ${e}`);
         }
       }
-      try {
-        console.info(`\nLet's make an image: ${fileNode.internal.description}`)
+      if (fileNode) {
         const fluidImages = await fluid({file: fileNode})
         fileNode.fluid = fluidImages;
         element = gatsbyifyImage(element, fileNode)
-        console.info(element.children.find(child => child.tagName === 'img').properties.alt);
-      } catch(e) {
-        console.info(`${element.properties.src} -- File node error: ${e}`)
+        // console.info(element.children.find(child => child.tagName === 'img').properties.alt);
+      } else {
+        console.info(`Bad times: ${element.properties.src}`)
       }
-    })
+    }
+    // }))
     node.content = astToHtml(contentAst);
   }
   if (node.internal.type === 'wordpress__wp_media') {
