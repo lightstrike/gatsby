@@ -1,6 +1,5 @@
 const fetch = require(`./fetch`)
 const normalize = require(`./normalize`)
-const { fluid } = require('gatsby-plugin-sharp')
 
 const typePrefix = `wordpress__`
 const refactoredEntityTypes = {
