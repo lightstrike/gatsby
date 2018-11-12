@@ -22,6 +22,7 @@ let _concurrentRequests
 let _includedRoutes
 let _excludedRoutes
 let _normalizer
+let _lastSync
 
 exports.sourceNodes = async (
   { actions, getNode, store, cache, createNodeId },
@@ -41,8 +42,19 @@ exports.sourceNodes = async (
     normalizer,
   }
 ) => {
-  const { createNode, touchNode } = actions
+  const { createNode, setPluginStatus, touchNode } = actions
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+  try {
+    const lastSync = store.getState().status.plugins['gatsby-source-wordpress'].lastSync
+    if (verboseOutput) {
+      console.info(`Last sync at: ${lastSync}`)
+    }
+  } catch(error) {
+    if (verboseOutput) {
+      console.warning(`No last sync found. Disregard this if this is your first time running gatsby develop.`)
+    }
+  }
+
 
   _verbose = verboseOutput
   _siteURL = `${protocol}://${normalizedBaseUrl}`
@@ -55,6 +67,7 @@ exports.sourceNodes = async (
   _includedRoutes = includedRoutes
   _excludedRoutes = excludedRoutes
   _normalizer = normalizer
+  _lastSync = lastSync
 
   let entities = await fetch({
     baseUrl,
@@ -71,6 +84,10 @@ exports.sourceNodes = async (
     typePrefix,
     refactoredEntityTypes,
   })
+
+  // Set sync time right after all data has been fetched from REST API
+  const syncTime = new Date().toISOString()
+  setPluginStatus({ lastSync: syncTime })
 
   // Normalize data & create nodes
 
@@ -91,6 +108,9 @@ exports.sourceNodes = async (
 
   // Lifts all "rendered" fields to top-level.
   entities = normalize.liftRenderedField(entities)
+
+  // Overwrite entities that have update data
+  entities = normalize.mapUpdatesToEntities(entities);
 
   // Exclude entities of unknown shape
   entities = normalize.excludeUnknownEntities(entities)
