@@ -164,6 +164,25 @@ exports.liftRenderedField = entities =>
     return e
   })
 
+// Get updates to associate with correct WP type
+// TODO: Add more robust case mapping for better customization, ACF and custom post type support
+exports.mapUpdatesToEntities = entities =>
+  entities.map(e => {
+    const update = entities.find(u => {
+      return u.__type === `wordpress__wp_updates` && u.wordpress_id == e.wordpress_id;
+    });
+
+    if ( update ) {
+      switch (e.__type) {
+        case `wordpress__POST`:
+            e.content = update.post_content
+            e.modified = update.post_modified
+      }
+    }
+    return e
+  })
+
+
 // Exclude entities of unknown shape
 // Assume all entities contain a wordpress_id,
 // except for whitelisted type wp_settings and the site_metadata
